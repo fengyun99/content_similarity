@@ -1,0 +1,6 @@
+default:
+  - font: "Arial"
+    size: 10
+    readonly: True
+    color: "yellow"
+    code: "utf-8"

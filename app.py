@@ -4,10 +4,12 @@ import shutil
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, \
     QTextEdit, QMessageBox
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor
+from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor, QFont
 from lib.docx_api import *
 from lib.queue_file import process_file_queue
 from lib.compare_file import compare_file
+from lib.pdf_api import *
+from lib.config import *
 
 # 全局变量
 highlight_list = []  # 高亮字段列表
@@ -15,7 +17,21 @@ highlight_list = []  # 高亮字段列表
 left_file_names = []  # 存储左边文件名的列表
 right_file_names = []  # 存储右边文件名的列表
 
+# 实例化对象并赋值
+file_config = Config()
+file_config.load_config("config/set.yaml")
+# 设置文本框字体，字体大小
+FONT = file_config.FONT
+FONT_SIZE = file_config.FONT_SIZE
+# 设置文本框是否为只读模式
+READ_ONLY = file_config.READ_ONLY
+# 设置高亮的颜色
+HIGHLIGHT_COLOR = file_config.HIGHLIGHT_COLOR
+# 设置编码集
+CODE_SET = file_config.CODE_SET
 
+
+# 文件上传
 class FileUploadWidget(QWidget):
     def __init__(self, label_text):
         super().__init__()
@@ -23,7 +39,10 @@ class FileUploadWidget(QWidget):
         self.file_button = QPushButton("上传文件")
         self.file_label = QLabel()
         self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)  # 设置为只读模式
+        self.text_edit.setReadOnly(READ_ONLY)  # 设置为只读模式
+        font = QFont(FONT, FONT_SIZE)  # 设置字体为Arial，字体大小为12
+        self.text_edit.setFont(font)
+
         # 初始化列表
         left_file_names.clear()
         right_file_names.clear()
@@ -53,11 +72,16 @@ class FileUploadWidget(QWidget):
         file_dialog = QFileDialog()
         file_dialog.setFileMode(QFileDialog.ExistingFile)
 
+        # 读取文件
         def read_file(name: str):
-            with open(name, 'r', encoding="utf-8") as file:
-                file_content = file.read()
-                self.text_edit.setPlainText(file_content)
+            try:
+                with open(name, 'r', encoding=CODE_SET) as file:
+                    file_content = file.read()
+                    self.text_edit.setPlainText(file_content)
+            except Exception:
+                raise Exception(f"请使用{CODE_SET}格式的文件")
 
+        # 添加文件名到列表，先进先出删除文件
         def label_append(name: str):
             if self.label.text() == "左边文件":
                 left_file_names.append(name)  # 将左边文件的名称添加到left_file_names列表
@@ -76,11 +100,27 @@ class FileUploadWidget(QWidget):
             docx_read = Docx()
             try:
                 if file_path.endswith("txt") or file_path.endswith("log"):
-                    shutil.copy(file_path, current_directory)
+                    # 处理相同文件重命名移动
                     file_name = os.path.basename(file_path)
-                    new_path = current_directory + "\\" + file_name
-                    read_file(new_path)
-                    label_append(new_path)
+                    destination_file = os.path.join(current_directory, file_name)
+                    # 如果目标文件已存在，则重命名
+                    if os.path.exists(destination_file):
+                        filename, extension = os.path.splitext(file_name)
+                        counter = 1
+                        while True:
+                            new_filename = f"{filename}_{counter}{extension}"
+                            new_destination_file = os.path.join(current_directory, new_filename)
+                            if not os.path.exists(new_destination_file):
+                                destination_file = new_destination_file
+                                break
+                            counter += 1
+
+                    # 复制文件
+                    shutil.copy2(file_path, destination_file)
+                    print(f"已复制文件：{destination_file}")
+
+                    read_file(destination_file)
+                    label_append(destination_file)
                 elif file_path.endswith("docx"):
                     file_name = os.path.basename(file_path)
                     new_name = docx_read.loadDoc(file_name, file_path)
@@ -95,8 +135,16 @@ class FileUploadWidget(QWidget):
                     os.remove(new_path)
                     read_file(new_name)
                     label_append(new_name)
+                elif file_path.endswith("pdf"):
+                    pdf_read = PdfApi(file_path)
+                    new_path = pdf_read.loadPdf()
+                    read_file(new_path)
+                    label_append(new_path)
                 else:
-                    raise Exception("不支持该格式的文件")
+                    self.text_edit.clear()
+                    label_append("")
+                    raise Exception("不支持该格式的文件,请重新上传")
+
             except Exception as e:
                 QMessageBox.warning(window, "文件类型错误", str(e))
 
@@ -106,6 +154,7 @@ class FileUploadWidget(QWidget):
     clear_highlight_signal = QtCore.pyqtSignal()
 
 
+# 主窗口布局
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -147,20 +196,21 @@ class MainWindow(QWidget):
             file_list = os.listdir("tmp")
             if len(file_list) < 2:
                 raise Exception("请先上传两个对比文件再对比")
+
             # 获取当前目录
             current_directory = os.getcwd()
-
             # 当前目录下data目录--判断目录存在吗不存在创建
             current_directory += r"\tmp"
-
+            # 获取两个文件的绝对路径
             file1 = current_directory + "\\" + file_list[0]
             file2 = current_directory + "\\" + file_list[1]
             highlight_list.extend(compare_file(file1, file2).by_set())
             if not highlight_list:
                 raise Exception("文本不存在重复内容")
+
             # 设置高亮颜色
             format_ = QTextCharFormat()
-            format_.setBackground(QColor("yellow"))
+            format_.setBackground(QColor(HIGHLIGHT_COLOR))
 
             # 高亮左边文本编辑框中的相同部分
             left_cursor = self.left_upload_widget.text_edit.textCursor()
@@ -191,7 +241,10 @@ class MainWindow(QWidget):
 
 
         except Exception as e:
-            QMessageBox.warning(window, "提示", str(e))
+            if str(e) == "文本不存在重复内容":
+                QMessageBox.warning(window, "结果", str(e))
+            else:
+                QMessageBox.warning(window, "错误", str(e))
 
     def clear_left_highlight(self):
         cursor = self.left_upload_widget.text_edit.textCursor()
