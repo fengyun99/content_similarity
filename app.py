@@ -76,6 +76,10 @@ class FileUploadWidget(QWidget):
                     file_content = file.read()
                     self.text_edit.setPlainText(file_content)
             except Exception:
+                os.remove(name)
+                self.text_edit.clear()
+                label_append("")
+
                 raise Exception(f"请使用{CODE_SET}格式的文件")
 
         # 添加文件名到列表，先进先出删除文件
@@ -115,7 +119,6 @@ class FileUploadWidget(QWidget):
                     # 复制文件
                     shutil.copy2(file_path, destination_file)
                     print(f"已复制文件：{destination_file}")
-
                     read_file(destination_file)
                     label_append(destination_file)
                 elif file_path.endswith("docx"):
@@ -143,7 +146,7 @@ class FileUploadWidget(QWidget):
                     raise Exception("不支持该格式的文件,请重新上传")
 
             except Exception as e:
-                QMessageBox.warning(window, "文件类型错误", str(e))
+                QMessageBox.warning(window, "发生错误", str(e))
 
             # 清除高亮
             self.clear_highlight_signal.emit()
@@ -184,7 +187,9 @@ class MainWindow(QWidget):
 
         # 连接清除高亮信号与槽函数
         self.left_upload_widget.clear_highlight_signal.connect(self.clear_right_highlight)
+        self.left_upload_widget.clear_highlight_signal.connect(self.clear_left_highlight)
         self.right_upload_widget.clear_highlight_signal.connect(self.clear_left_highlight)
+        self.right_upload_widget.clear_highlight_signal.connect(self.clear_right_highlight)
 
     def compare_files(self):
         # 清除高亮
