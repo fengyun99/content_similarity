@@ -16,6 +16,10 @@ highlight_list = []  # 高亮字段列表
 # 创建左右两个文件名称队列，实现先进先出，删除文件
 left_file_names = []  # 存储左边文件名的列表
 right_file_names = []  # 存储右边文件名的列表
+# 获取当前目录
+current_directory = os.getcwd()
+# 当前目录下data目录--判断目录存在吗不存在创建
+current_directory += r"\tmp"
 
 # 实例化对象并赋值
 file_config = Config()
@@ -40,7 +44,7 @@ class FileUploadWidget(QWidget):
         self.file_label = QLabel()
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(READ_ONLY)  # 设置为只读模式
-        font = QFont(FONT, FONT_SIZE)  # 设置字体为Arial，字体大小为12
+        font = QFont(FONT, FONT_SIZE)  # 设置字体为Arial，字体大小为10
         self.text_edit.setFont(font)
 
         # 初始化列表
@@ -59,13 +63,6 @@ class FileUploadWidget(QWidget):
         self.file_button.clicked.connect(self.open_file_dialog)
 
     def open_file_dialog(self):
-
-        # 获取当前目录
-        current_directory = os.getcwd()
-
-        # 当前目录下data目录--判断目录存在吗不存在创建
-        current_directory += r"\tmp"
-
         if not os.path.exists(os.path.abspath(current_directory)):
             os.makedirs(os.path.abspath(current_directory))
 
@@ -190,17 +187,13 @@ class MainWindow(QWidget):
         self.right_upload_widget.clear_highlight_signal.connect(self.clear_left_highlight)
 
     def compare_files(self):
-        # 改
+        # 清除高亮
         highlight_list.clear()
         try:
             file_list = os.listdir("tmp")
             if len(file_list) < 2:
                 raise Exception("请先上传两个对比文件再对比")
 
-            # 获取当前目录
-            current_directory = os.getcwd()
-            # 当前目录下data目录--判断目录存在吗不存在创建
-            current_directory += r"\tmp"
             # 获取两个文件的绝对路径
             file1 = current_directory + "\\" + file_list[0]
             file2 = current_directory + "\\" + file_list[1]
