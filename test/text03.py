@@ -138,7 +138,7 @@ class MainWindow(QWidget):
 
     def compare_files(self):
         try:
-            file_list = os.listdir("tmp")
+            file_list = os.listdir("lib")
             if len(file_list) < 2:
                 raise Exception
             # 获取当前目录

@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTextEdit
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor
+from QPlainTextEditWithLineNum import QTextEditWithLineNum
 import sys
 
 
 class TextHighlighter(QWidget):
     def __init__(self):
         super().__init__()
-        self.text_edit = QTextEdit()
+        self.text_edit = QTextEditWithLineNum()
         self.highlight_button = QPushButton("高亮文本")
         self.highlight_button.clicked.connect(self.highlight_text)
 
@@ -35,6 +36,9 @@ class TextHighlighter(QWidget):
                 cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(text))
                 cursor.mergeCharFormat(format_)
                 index = self.text_edit.toPlainText().find(text, index + 1)
+
+        self.text_edit.highlighted_text = text_list
+        self.text_edit.update()
 
 
 if __name__ == '__main__':

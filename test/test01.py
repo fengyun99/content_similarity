@@ -16,7 +16,7 @@ def process_file_queue(file_list):
 
 
 # 示例用法
-file_queue = ["tmp/file1.txt", "tmp/file2.txt", "tmp/file3.txt"]
+file_queue = ["lib/file1.txt", "lib/file2.txt", "lib/file3.txt"]
 process_file_queue(file_queue)  # 删除并打印 "Deleted file: file1.txt"
 process_file_queue(file_queue)  # 删除并打印 "Deleted file: file2.txt"
 process_file_queue(file_queue)  # 删除并打印 "Deleted file: file3.txt"

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# @Time     : 2023/6/30 14:17
+# @Author   : FengYun
+# @File     : compare_file.py
+# @Software : PyCharm
 class compare_file:
     def __init__(self, file1, file2):
         self.file1 = file1
@@ -42,4 +46,3 @@ class compare_file:
                     tmp_list.append(tmp_result)
 
         return tmp_list
-

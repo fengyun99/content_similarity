@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# @Time     : 2023/6/30 14:18
+# @Author   : FengYun
+# @File     : config.py
+# @Software : PyCharm
 import yaml
 
 
@@ -14,8 +18,10 @@ class Config:
         self.HIGHLIGHT_COLOR = None
         # 设置编码集
         self.CODE_SET = None
+        # 设置临时存放文件的地址，不能和已存在的文件夹重名
+        self.TMP_PATH = None
 
-    def load_config(self, config_path:str):
+    def load_config(self, config_path: str):
         with open(config_path, "r") as f:
             res = yaml.load(f, Loader=yaml.Loader)
         try:
@@ -42,3 +48,11 @@ class Config:
             self.CODE_SET = res['default'][0]['code']
         except:
             self.CODE_SET = "utf-8"
+
+        try:
+            self.TMP_PATH = res['default'][0]['tmp_path']
+            if self.TMP_PATH == "lib" or self.TMP_PATH == "config" or self.TMP_PATH == "test":
+                raise Exception("请使用其他文件夹命名")
+        except:
+            self.TMP_PATH = "tmp"
+

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import shutil
+import sys
+
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, \
     QTextEdit, QMessageBox
@@ -16,10 +19,6 @@ highlight_list = []  # 高亮字段列表
 # 创建左右两个文件名称队列，实现先进先出，删除文件
 left_file_names = []  # 存储左边文件名的列表
 right_file_names = []  # 存储右边文件名的列表
-# 获取当前目录
-current_directory = os.getcwd()
-# 当前目录下data目录--判断目录存在吗不存在创建
-current_directory += r"\tmp"
 
 # 实例化对象并赋值
 file_config = Config()
@@ -34,6 +33,13 @@ HIGHLIGHT_COLOR = file_config.HIGHLIGHT_COLOR
 # 设置编码集
 CODE_SET = file_config.CODE_SET
 
+# 设置临时存放文件的地址，不能和已存在的文件夹重名
+TMP_PATH = file_config.TMP_PATH
+# 获取当前目录
+current_directory = os.getcwd()
+# 当前目录下data目录--判断目录存在吗不存在创建
+current_directory += TMP_PATH
+
 
 # 文件上传
 class FileUploadWidget(QWidget):
@@ -42,6 +48,7 @@ class FileUploadWidget(QWidget):
         self.label = QLabel(label_text)
         self.file_button = QPushButton("上传文件")
         self.file_label = QLabel()
+        # 更换为自己的文本窗口
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(READ_ONLY)  # 设置为只读模式
         font = QFont(FONT, FONT_SIZE)  # 设置字体为Arial，字体大小为10
@@ -195,7 +202,7 @@ class MainWindow(QWidget):
         # 清除高亮
         highlight_list.clear()
         try:
-            file_list = os.listdir("tmp")
+            file_list = os.listdir(TMP_PATH)
             if len(file_list) < 2:
                 raise Exception("请先上传两个对比文件再对比")
 
@@ -275,14 +282,14 @@ class MainWindow(QWidget):
         right_file_names.clear()
         highlight_list.clear()
         # 检查文件夹是否存在
-        if os.path.exists("tmp"):
+        if os.path.exists(TMP_PATH):
             # 删除文件夹及其内部的所有文件
-            shutil.rmtree("tmp")
+            shutil.rmtree(TMP_PATH)
 
     def closeEvent(self, event):
         # 删除tmp文件夹及其内容
-        if os.path.exists('tmp'):
-            shutil.rmtree('tmp')
+        if os.path.exists(TMP_PATH):
+            shutil.rmtree(TMP_PATH)
 
         event.accept()
 

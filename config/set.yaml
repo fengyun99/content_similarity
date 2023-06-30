@@ -4,3 +4,4 @@ default:
     readonly: True
     color: "yellow"
     code: "utf-8"
+    tmp_path: "tmp"
