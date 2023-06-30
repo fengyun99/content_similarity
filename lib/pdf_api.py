@@ -8,7 +8,6 @@ import os
 from pypdf import PdfReader
 
 
-
 class PdfApi:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -41,10 +40,10 @@ class PdfApi:
                 pdf_file.close()
 
     def loadPdf(self):
-        base_name = os.path.basename(self.file_path)
         content_list = self.read_pdf_paragraphs()
         message = "".join(content_list).replace("   ", "\n")
-        name = f"{base_name}.txt"
+        name = "tmp/" + self.file_path.split("/")[-1] + ".txt"
+        # print(name)
         # 确保文件夹存在
         os.makedirs(os.path.dirname(name), exist_ok=True)
 

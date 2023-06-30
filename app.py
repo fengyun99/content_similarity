@@ -38,7 +38,8 @@ TMP_PATH = file_config.TMP_PATH
 # 获取当前目录
 current_directory = os.getcwd()
 # 当前目录下data目录--判断目录存在吗不存在创建
-current_directory += TMP_PATH
+current_directory += "\\" + TMP_PATH
+# print(current_directory)
 
 
 # 文件上传
@@ -143,6 +144,7 @@ class FileUploadWidget(QWidget):
                     read_file(new_name)
                     label_append(new_name)
                 elif file_path.endswith("pdf"):
+                    print("****************" + file_path)
                     pdf_read = PdfApi(file_path)
                     new_path = pdf_read.loadPdf()
                     read_file(new_path)

@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QRect, QSize, QPoint
 from PyQt5.QtGui import QPainter, QFont, QTextCharFormat, QColor
 from PyQt5.QtWidgets import QTextEdit, QApplication, QWidget, QPushButton
 
+
 class QTextEditWithLineNum(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -85,7 +86,6 @@ class LineNumPaint(QWidget):
 
     def paintEvent(self, event):
         self.q_edit_line_num.lineNumberAreaPaintEvent(event)
-
 
 # if __name__ == '__main__':
 #     app = QApplication(sys.argv)
